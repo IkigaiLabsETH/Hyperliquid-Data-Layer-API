@@ -21,6 +21,7 @@ Each file in this folder is a standalone Python script that demonstrates one sec
 | `11_user_fills.py` | Trade History | Historical fills, PnL analysis, win/loss streaks |
 | `12_hlp_positions.py` | HLP Dashboard | All 7 HLP strategies, trades, liquidators, deltas |
 | `13_binance_liquidations.py` | Binance Liqs | Binance Futures liquidations, stats, top events |
+| `14_multi_liquidations.py` | Multi-Exchange | Combined liqs from Hyperliquid, Binance, Bybit, OKX |
 
 ---
 
@@ -104,16 +105,17 @@ response = requests.get('https://api.moondev.com/api/trades.json?api_key=YOUR_AP
 | `GET /api/events.json` | Real-time blockchain events |
 | `GET /api/contracts.json` | Contract registry with metadata |
 
-### BINANCE LIQUIDATIONS
+### MULTI-EXCHANGE LIQUIDATIONS
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /api/binance_liquidations/stats.json` | Summary stats (24h volume, counts) |
-| `GET /api/binance_liquidations/10m.json` | Last 10 minutes |
-| `GET /api/binance_liquidations/1h.json` | Last hour |
-| `GET /api/binance_liquidations/24h.json` | Last 24 hours |
-| `GET /api/binance_liquidations/7d.json` | Last 7 days |
-| `GET /api/binance_liquidations/30d.json` | Last 30 days |
+| `GET /api/all_liquidations/{timeframe}.json` | Combined liqs from ALL exchanges |
+| `GET /api/all_liquidations/stats.json` | Combined stats with exchange breakdown |
+| `GET /api/binance_liquidations/{timeframe}.json` | Binance Futures liquidations |
+| `GET /api/bybit_liquidations/{timeframe}.json` | Bybit liquidations |
+| `GET /api/okx_liquidations/{timeframe}.json` | OKX liquidations |
+
+**Timeframes:** 10m, 1h, 4h, 12h, 24h, 2d, 7d, 14d, 30d
 
 ### TICK DATA
 
@@ -182,9 +184,12 @@ api = MoonDevAPI(api_key="your_key_here")
 liqs = api.get_liquidations("1h")           # 10m, 1h, 4h, 12h, 24h, 2d, 7d, 14d, 30d
 stats = api.get_liquidation_stats()
 
-# === BINANCE LIQUIDATIONS ===
-binance_stats = api.get_binance_liquidation_stats()  # Summary stats
-binance_liqs = api.get_binance_liquidations("1h")    # 10m, 1h, 24h, 7d, 30d
+# === MULTI-EXCHANGE LIQUIDATIONS ===
+all_stats = api.get_all_liquidation_stats()          # Combined stats all exchanges
+all_liqs = api.get_all_liquidations("1h")            # Combined liquidations
+binance_liqs = api.get_binance_liquidations("1h")    # Binance only
+bybit_liqs = api.get_bybit_liquidations("1h")        # Bybit only
+okx_liqs = api.get_okx_liquidations("1h")            # OKX only
 
 # === POSITIONS & WHALES ===
 positions = api.get_positions()              # Large positions near liquidation
