@@ -55,6 +55,12 @@ HIP3 LIQUIDATIONS (Stocks, Commodities, Indices, FX):
   Categories: Stocks (TSLA, NVDA, AAPL, etc.), Commodities (GOLD, SILVER, OIL),
               Indices (XYZ100), FX (EUR, JPY)
 
+HIP3 MARKET DATA (Multi-Dex: Stocks, Commodities, Indices, FX, Crypto):
+- /api/hip3/meta                             - All 51 symbols from all 4 dexes with current prices
+- /api/hip3_ticks/stats.json                 - Tick collector stats with dex breakdown
+- /api/hip3_ticks/{dex}_{ticker}.json        - Individual tick data (e.g., xyz_tsla.json, hyna_btc.json)
+  Dexes: xyz (27 stocks/commodities/FX), flx (7), hyna (12 crypto), km (5 US indices)
+
 HYPERLIQUID USER DATA:
 - get_user_positions(address)           - Get positions via Hyperliquid API (direct)
 
@@ -889,6 +895,68 @@ class MoonDevAPI:
                 - top_symbols: Top symbols by liquidation volume
         """
         response = self._get("/api/hip3_liquidations/stats.json")
+        return response.json()
+
+    # ==================== HIP3 MARKET DATA (Multi-Dex) ====================
+    def get_hip3_meta(self, include_delisted=False):
+        """
+        Get all HIP3 symbols from all 4 dexes with current prices.
+
+        51 symbols across 4 dexes:
+            - xyz (27): Stocks, commodities, FX, indices (TSLA, NVDA, GOLD, EUR, XYZ100)
+            - flx (7): Stocks, commodities, XMR (XMR, GOLD, SILVER, OIL)
+            - hyna (12): Crypto (BTC, ETH, HYPE, SOL, FARTCOIN, PUMP)
+            - km (5): US indices (US500, USTECH, SMALL2000)
+
+        Args:
+            include_delisted: If True, includes delisted symbols (default: False)
+
+        Returns:
+            dict with:
+                - count: Total number of symbols
+                - dexes: Dict organized by dex prefix
+                - symbols: List of all symbol objects with prices
+                - categories: Breakdown by category (stocks, indices, commodities, fx, crypto)
+
+        Symbol format: {dex}:{ticker} (e.g., xyz:TSLA, hyna:BTC, km:US500)
+        """
+        params = "?include_delisted=true" if include_delisted else ""
+        response = self._get(f"/api/hip3/meta{params}")
+        return response.json()
+
+    def get_hip3_tick_stats(self):
+        """
+        Get HIP3 tick collector statistics with dex breakdown.
+
+        Returns:
+            dict with:
+                - total_symbols: Total symbols being tracked
+                - total_ticks: Total ticks collected
+                - by_dex: Breakdown by dex (xyz, flx, hyna, km)
+                - by_category: Breakdown by category
+                - last_update: Last collection timestamp
+        """
+        response = self._get("/api/hip3_ticks/stats.json")
+        return response.json()
+
+    def get_hip3_ticks(self, dex, ticker):
+        """
+        Get raw tick data for a specific HIP3 symbol.
+
+        Args:
+            dex: Dex prefix (xyz, flx, hyna, km)
+            ticker: Symbol ticker (tsla, btc, gold, us500, etc.) - case insensitive
+
+        Returns:
+            dict/list with tick data for the symbol
+
+        Examples:
+            get_hip3_ticks("xyz", "tsla")   # Tesla stock
+            get_hip3_ticks("xyz", "gold")   # Gold commodity
+            get_hip3_ticks("hyna", "btc")   # Bitcoin
+            get_hip3_ticks("km", "us500")   # S&P 500 index
+        """
+        response = self._get(f"/api/hip3_ticks/{dex.lower()}_{ticker.lower()}.json")
         return response.json()
 
 

@@ -27,7 +27,8 @@ Each file in this folder is a standalone Python script that demonstrates one sec
 | `17_hlp_sentiment.py` | HLP Sentiment | THE BIG ONE! Z-scores and retail positioning signals |
 | `18_hlp_analytics.py` | HLP Analytics | Liquidator status, market maker, timing, correlation |
 | `19_market_data.py` | Market Data | All prices, orderbooks, account state - NO RATE LIMITS |
-| `20_hip3_liquidations.py` | HIP3 Liqs | **NEW!** Stocks, Commodities, Indices & FX liquidations |
+| `20_hip3_liquidations.py` | HIP3 Liqs | Stocks, Commodities, Indices & FX liquidations |
+| `21_hip3_market_data.py` | HIP3 Data | **NEW!** OHLCV candles & tick data for 33 TradFi assets |
 
 ---
 
@@ -141,6 +142,24 @@ response = requests.get('https://api.moondev.com/api/trades.json?api_key=YOUR_AP
 - **Indices:** XYZ100 (Nasdaq proxy, ~$120M OI)
 - **FX:** EUR, JPY (~$3M OI)
 
+### HIP3 MARKET DATA (Multi-Dex: 51 symbols)
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/hip3/meta` | All 51 symbols from all 4 dexes with current prices |
+| `GET /api/hip3_ticks/stats.json` | Tick collector stats with dex breakdown |
+| `GET /api/hip3_ticks/{dex}_{ticker}.json` | Individual tick data (e.g., xyz_tsla.json, hyna_btc.json) |
+
+**Symbol Format:** `{dex}:{ticker}` (e.g., xyz:TSLA, hyna:BTC, km:US500)
+
+**4 Dexes tracked (51 symbols):**
+- **xyz (27):** Stocks, commodities, FX, indices (TSLA, NVDA, GOLD, SILVER, EUR, JPY, XYZ100)
+- **flx (7):** Stocks, commodities, XMR (XMR, GOLD, SILVER, OIL)
+- **hyna (12):** Crypto (BTC, ETH, HYPE, SOL, FARTCOIN, PUMP)
+- **km (5):** US indices (US500, USTECH, SMALL2000)
+
+**Categories:** Stocks (22) | Indices (4) | Commodities (4) | FX (2) | Crypto (12)
+
 ### TICK DATA
 
 | Endpoint | Description |
@@ -224,6 +243,14 @@ okx_liqs = api.get_okx_liquidations("1h")            # OKX only
 hip3_stats = api.get_hip3_liquidation_stats()        # Stats with category breakdown
 hip3_liqs = api.get_hip3_liquidations("1h")          # HIP3 liquidations (10m, 1h, 24h, 7d)
 hip3_24h = api.get_hip3_liquidations("24h")          # 24h of HIP3 liqs
+
+# === HIP3 MARKET DATA (Multi-Dex: 51 symbols) ===
+hip3_meta = api.get_hip3_meta()                      # All 51 symbols from all dexes
+hip3_stats = api.get_hip3_tick_stats()               # Tick collector stats
+tsla_ticks = api.get_hip3_ticks("xyz", "tsla")       # xyz:TSLA tick data
+btc_ticks = api.get_hip3_ticks("hyna", "btc")        # hyna:BTC tick data
+gold_ticks = api.get_hip3_ticks("xyz", "gold")       # xyz:GOLD tick data
+us500_ticks = api.get_hip3_ticks("km", "us500")      # km:US500 tick data
 
 # === POSITIONS & WHALES ===
 positions = api.get_positions()              # Top 50 positions across ALL symbols (fast, 1s updates)
