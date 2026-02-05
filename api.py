@@ -351,6 +351,53 @@ class MoonDevAPI:
         response = self._get(f"/api/user/{address}/fills{params}")
         return response.json()
 
+    # ==================== POSITION SNAPSHOTS ====================
+    def get_position_snapshots(self, symbol, hours=24, limit=1000, min_distance_pct=None, max_distance_pct=None, side=None):
+        """
+        Get historical position snapshots for positions near liquidation.
+
+        Tracks positions within 15% of liquidation price with minimum $10k value.
+        Snapshots are taken every 1 minute.
+
+        Args:
+            symbol: Symbol to query (BTC, ETH, SOL, XRP, HYPE)
+            hours: Lookback period in hours (default: 24)
+            limit: Max records to return (default: 1000)
+            min_distance_pct: Filter by minimum distance to liquidation %
+            max_distance_pct: Filter by maximum distance to liquidation %
+            side: Filter by position side ('long' or 'short')
+
+        Returns:
+            dict with snapshots and metadata
+        """
+        params = f"?hours={hours}&limit={limit}"
+        if min_distance_pct is not None:
+            params += f"&min_distance_pct={min_distance_pct}"
+        if max_distance_pct is not None:
+            params += f"&max_distance_pct={max_distance_pct}"
+        if side is not None:
+            params += f"&side={side}"
+        response = self._get(f"/api/position_snapshots/{symbol}{params}")
+        return response.json()
+
+    def get_position_snapshot_stats(self, hours=24):
+        """
+        Get aggregate statistics for position snapshots across all tracked symbols.
+
+        Args:
+            hours: Lookback period in hours (default: 24)
+
+        Returns:
+            dict with:
+                - overall: total snapshots, unique users, avg distance
+                - by_symbol: per-symbol breakdown
+                - top_10_closest: positions closest to liquidation
+                - scan_metadata: recent scan info
+        """
+        params = f"?hours={hours}"
+        response = self._get(f"/api/position_snapshots/stats{params}")
+        return response.json()
+
     # ==================== MARKET DATA (NO RATE LIMITS!) ====================
     def get_prices(self):
         """
